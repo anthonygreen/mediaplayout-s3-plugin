@@ -2,6 +2,7 @@ package hudson.plugins.s3;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.regions.Regions;
@@ -19,7 +20,7 @@ public class ClientHelper {
             "hudson.plugins.s3.DEFAULT_AMAZON_S3_REGION",
             com.amazonaws.services.s3.model.Region.US_Standard.toAWSRegion().getName());
 
-    public static AmazonS3Client createClient(String accessKey, String secretKey, boolean useRole, String region, ProxyConfiguration proxy)
+    public static AmazonS3Client createClient(String accessKey, String secretKey, String sessionToken, boolean useRole, String region, ProxyConfiguration proxy)
     {
         Region awsRegion = getRegionFromString(region);
 
@@ -28,6 +29,8 @@ public class ClientHelper {
         final AmazonS3Client client;
         if (useRole) {
             client = new AmazonS3Client(clientConfiguration);
+        } else if (sessionToken != null) {
+            client = new AmazonS3Client(new BasicSessionCredentials(accessKey, secretKey, sessionToken), clientConfiguration);
         } else {
             client = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey), clientConfiguration);
         }
